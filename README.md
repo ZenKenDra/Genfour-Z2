@@ -1,4 +1,4 @@
-[index (18).html](https://github.com/user-attachments/files/22680387/index.18.html)
+[index (19).html](https://github.com/user-attachments/files/22680456/index.19.html)
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -9,7 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-<script src="https://www.youtube.com/iframe_api"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
 
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #020617; color: #f8fafc; }
@@ -138,7 +138,7 @@
         let deletionHandler = null;
         let player; 
         let videoDuration = 0;
-        const HUGGING_FACE_API_KEY = "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"; // API Key ditanam di sini
+        const HUGGING_FACE_API_KEY = "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"; // API Key diperbarui di sini
 
         function onYouTubeIframeAPIReady() {}
 
