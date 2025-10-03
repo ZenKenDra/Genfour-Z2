@@ -1,10 +1,9 @@
-[Uploading index (16).html…]()
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clipz - Auto Video Clipping (Hugging Face AI)</title>
+    <title>Clipz - Auto Video Clipping (HF AI)</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -42,7 +41,7 @@
                             <i data-lucide="clapperboard" class="w-6 h-6 text-white"></i>
                         </div>
                         <h1 class="text-2xl font-bold text-white tracking-tight">Clipz</h1>
-                        <span id="versionBadge" class="bg-sky-700 text-sky-300 text-xs font-medium px-2.5 py-0.5 rounded-full">Beta Z2.HF</span>
+                        <span class="bg-sky-700 text-sky-300 text-xs font-medium px-2.5 py-0.5 rounded-full">Beta Z2</span>
                     </div>
                 </div>
             </div>
@@ -61,7 +60,7 @@
                     </div>
 
                     <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex flex-col gap-4">
-                         <div class="flex flex-col sm:flex-row items-center gap-3">
+                        <div class="flex flex-col sm:flex-row items-center gap-3">
                             <div class="relative w-full flex items-center">
                                 <i data-lucide="youtube" class="w-6 h-6 text-red-500 absolute left-3 pointer-events-none"></i>
                                 <input id="ytInput" type="text" placeholder="Tempelkan link YouTube di sini..." class="w-full pl-12 pr-4 py-2 bg-slate-800 text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition">
@@ -76,12 +75,6 @@
                             </div>
                         </div>
                         <div id="errorMessage" class="text-red-400 text-sm mt-1 hidden"></div>
-                        <div id="apiKeySection" class="flex flex-col gap-2">
-                             <div class="border-t border-slate-800 my-2"></div>
-                            <label for="apiKeyInput" class="text-sm font-medium text-slate-300">Hugging Face API Key</label>
-                            <input id="apiKeyInput" type="password" class="w-full px-4 py-2 bg-slate-800 text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition">
-                             <p class="text-xs text-slate-500">API Key Anda sudah terpasang dan disimpan di browser.</p>
-                        </div>
                         <div class="border-t border-slate-800 my-2"></div>
                         <div class="flex flex-wrap items-center gap-3">
                             <button id="autoClipBtn" class="flex items-center gap-2 bg-sky-500 hover:bg-sky-600 text-white font-semibold px-4 py-2 rounded-lg transition btn-disabled" disabled>
@@ -111,7 +104,8 @@
                 </div>
             </div>
         </main>
-         <footer class="bg-slate-900/70 border-t border-slate-800 mt-16 py-12">
+
+        <footer class="bg-slate-900/70 border-t border-slate-800 mt-16 py-8">
             <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center text-slate-400 text-sm">
                 <p>&copy; 2024 Clipz Team - Binus University. All rights reserved.</p>
             </div>
@@ -143,8 +137,8 @@
         let deletionHandler = null;
         let player; 
         let videoDuration = 0;
+        const HUGGING_FACE_API_KEY = "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"; // API Key ditanam di sini
 
-        // --- YouTube Player Setup ---
         function onYouTubeIframeAPIReady() {}
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -166,34 +160,24 @@
             const modalConfirmBtn = document.getElementById('modalConfirmBtn');
             const modalCancelBtn = document.getElementById('modalCancelBtn');
             const clearUrlBtn = document.getElementById('clearUrlBtn');
-            const apiKeyInput = document.getElementById('apiKeyInput');
 
-            // --- UI & State Management Functions ---
+            // --- UI & State Management ---
             const setStatus = (type, message = '') => {
                 statusOverlay.classList.remove('hidden');
                 let content = '';
                 switch (type) {
-                    case 'loading': 
-                        content = `<div class="loader"></div><p class="mt-4 font-semibold text-sky-400">AI sedang menganalisis...</p><p id="loading-status" class="text-sm">${message}</p>`; 
-                        break;
-                    case 'empty': 
-                        content = `<i data-lucide="film" class="w-16 h-16"></i><p class="mt-4 font-semibold">Belum Ada Klip</p><p class="text-sm">Muat video dan klik 'Auto Clip' untuk memulai.</p>`; 
-                        break;
-                    case 'error': 
-                        content = `<i data-lucide="alert-circle" class="w-16 h-16 text-red-400"></i><p class="mt-4 font-semibold">Terjadi Kesalahan</p><p class="text-sm">${message}</p>`; 
-                        break;
+                    case 'loading': content = `<div class="loader"></div><p class="mt-4 font-semibold text-sky-400">AI sedang menganalisis...</p><p id="loading-status" class="text-sm">${message}</p>`; break;
+                    case 'empty': content = `<i data-lucide="film" class="w-16 h-16"></i><p class="mt-4 font-semibold">Belum Ada Klip</p><p class="text-sm">Klik 'Auto Clip' untuk memulai.</p>`; break;
+                    case 'error': content = `<i data-lucide="alert-circle" class="w-16 h-16 text-red-400"></i><p class="mt-4 font-semibold">Terjadi Kesalahan</p><p class="text-sm">${message}</p>`; break;
                 }
                 statusOverlay.innerHTML = content;
                 lucide.createIcons();
             };
-            
             const updateLoadingStatus = (message) => {
                 const statusElement = document.getElementById('loading-status');
-                if (statusElement) statusElement.textContent = message;
+                if(statusElement) statusElement.textContent = message;
             };
-
             const hideStatus = () => statusOverlay.classList.add('hidden');
-            
             const updateButtonsState = () => {
                 const hasVideo = !!currentVideoId;
                 const hasClips = clipsData.length > 0;
@@ -202,14 +186,9 @@
                 deleteAllBtn.disabled = !hasClips;
                 [autoClipBtn, exportBtn, deleteAllBtn].forEach(btn => btn.classList.toggle('btn-disabled', btn.disabled));
             };
-            
-            const showError = (message) => { 
-                errorMessage.textContent = message; 
-                errorMessage.classList.remove('hidden'); 
-            };
+            const showError = (message) => { errorMessage.textContent = message; errorMessage.classList.remove('hidden'); };
             const hideError = () => errorMessage.classList.add('hidden');
 
-            // --- YouTube & Video Logic ---
             const getYouTubeVideoId = (url) => {
                 const patterns = [/(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&]+)/, /(?:https?:\/\/)?(?:www\.)?youtu\.be\/([^?]+)/, /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([^?]+)/];
                 for (const pattern of patterns) {
@@ -222,12 +201,11 @@
             const createPlayer = (videoId) => {
                 videoPlaceholder.classList.add('hidden');
                 document.getElementById('youtubePlayer').classList.remove('hidden');
-                if (player) { 
-                    player.loadVideoById(videoId); 
-                } else {
+                if (player) { player.loadVideoById(videoId); } 
+                else {
                     player = new YT.Player('youtubePlayer', {
                         height: '100%', width: '100%', videoId: videoId,
-                        playerVars: { 'playsinline': 1, 'modestbranding': 1, 'rel': 0 },
+                        playerVars: { 'playsinline': 1 },
                         events: { 'onStateChange': onPlayerStateChange }
                     });
                 }
@@ -241,22 +219,22 @@
             }
             
             const timeStringToSeconds = (timeStr) => {
+                if (!timeStr || typeof timeStr !== 'string') return 0;
                 const parts = timeStr.split(':').map(Number).reverse();
                 return parts.reduce((acc, val, i) => acc + val * Math.pow(60, i), 0);
             };
 
             const formatTime = (totalSeconds) => {
-                totalSeconds = Math.floor(totalSeconds);
-                const hours = Math.floor(totalSeconds / 3600);
-                const minutes = Math.floor((totalSeconds % 3600) / 60);
-                const seconds = totalSeconds % 60;
-                const paddedMinutes = String(minutes).padStart(2, '0');
-                const paddedSeconds = String(seconds).padStart(2, '0');
-                if (hours > 0) return `${String(hours).padStart(2, '0')}:${paddedMinutes}:${paddedSeconds}`;
-                return `${paddedMinutes}:${paddedSeconds}`;
+                    totalSeconds = Math.floor(totalSeconds);
+                    const hours = Math.floor(totalSeconds / 3600);
+                    const minutes = Math.floor((totalSeconds % 3600) / 60);
+                    const seconds = totalSeconds % 60;
+                    const paddedMinutes = String(minutes).padStart(2, '0');
+                    const paddedSeconds = String(seconds).padStart(2, '0');
+                    if (hours > 0) return `${String(hours).padStart(2, '0')}:${paddedMinutes}:${paddedSeconds}`;
+                    return `${paddedMinutes}:${paddedSeconds}`;
             };
             
-            // --- Core Application Logic ---
             loadVideoBtn.addEventListener('click', () => {
                 const url = ytInput.value.trim();
                 if (!url) { showError("Silakan masukkan link YouTube."); return; }
@@ -272,7 +250,9 @@
                 }
                 updateButtonsState();
             });
-            
+
+            ytInput.addEventListener('input', () => clearUrlBtn.classList.toggle('hidden', ytInput.value.length === 0));
+
             const resetApplication = () => {
                 ytInput.value = '';
                 hideError();
@@ -286,63 +266,26 @@
                 updateButtonsState();
                 clearUrlBtn.classList.add('hidden');
             };
-            
             clearUrlBtn.addEventListener('click', resetApplication);
-            ytInput.addEventListener('input', () => clearUrlBtn.classList.toggle('hidden', ytInput.value.length === 0));
-            apiKeyInput.addEventListener('input', () => {
-                 localStorage.setItem('hfApiKey', apiKeyInput.value);
-            });
-            const loadApiKey = () => {
-                const savedKey = localStorage.getItem('hfApiKey');
-                if (savedKey) {
-                    apiKeyInput.value = savedKey;
-                } else {
-                    const prefilledKey = "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";
-                    apiKeyInput.value = prefilledKey;
-                    localStorage.setItem('hfApiKey', prefilledKey);
-                }
-            }
+            
+            // --- Hugging Face AI Integration ---
+            const getHuggingFaceAIClips = async (apiKey, videoTitle, duration) => {
+                if (!apiKey) throw new Error("API Key Hugging Face tidak ditemukan.");
 
-            // --- AI Integration (Hugging Face API) ---
-            const getHuggingFaceAIClips = async (apiKey, videoTitle, videoDuration) => {
-                if (!apiKey) {
-                    throw new Error("API Key Hugging Face tidak ditemukan.");
-                }
-                
-                // Menggunakan model yang bagus untuk mengikuti instruksi
                 const API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2";
-                
                 updateLoadingStatus("Mempersiapkan prompt untuk AI...");
-                const videoDurationFormatted = formatTime(videoDuration);
+                const durationFormatted = formatTime(duration);
 
-                // Prompt Engineering untuk Hugging Face
-                const prompt = `
-                    [INST] Anda adalah asisten editor video yang ahli. Tugas Anda adalah menganalisis judul dan durasi video, lalu menyarankan 6 klip menarik.
-                    Hasilkan respons HANYA dalam format JSON, tanpa teks penjelasan tambahan.
-                    Format JSON harus berupa sebuah objek dengan satu kunci "clips", yang berisi array objek.
-                    Setiap objek dalam array harus memiliki tiga kunci: "title" (string), "start" (string "MM:SS"), dan "end" (string "MM:SS").
+                const prompt = `[INST] Anda adalah asisten editor video. Berdasarkan judul dan durasi video, buat 6 klip menarik. Balas HANYA dengan format JSON, tanpa teks lain. JSON harus memiliki satu kunci "clips" yang berisi array objek. Setiap objek harus punya kunci: "title" (string), "start" (string "MM:SS"), dan "end" (string "MM:SS").
 
-                    Informasi Video:
-                    - Judul: "${videoTitle}"
-                    - Durasi: ${videoDurationFormatted}
-
-                    Contoh output yang benar:
-                    {
-                      "clips": [
-                        { "title": "Poin Pembukaan", "start": "00:15", "end": "00:55" },
-                        { "title": "Demonstrasi Fitur Utama", "start": "02:30", "end": "03:45" }
-                      ]
-                    }
-
-                    Sekarang, buat 6 klip untuk video di atas. [/INST]
-                `;
+                Video:
+                - Judul: "${videoTitle}"
+                - Durasi: ${durationFormatted}
+                [/INST]`;
 
                 const payload = {
                     inputs: prompt,
-                    parameters: {
-                        max_new_tokens: 512, // Cukup untuk menghasilkan JSON
-                        return_full_text: false,
-                    }
+                    parameters: { max_new_tokens: 500, return_full_text: false }
                 };
 
                 updateLoadingStatus("Menghubungi server AI Hugging Face...");
@@ -355,52 +298,48 @@
                     body: JSON.stringify(payload)
                 });
                 
-                updateLoadingStatus("AI sedang memproses permintaan...");
                 if (!response.ok) {
                     const errorBody = await response.json();
                     console.error("Hugging Face API Error:", errorBody);
+                    // Check for model loading error specifically
+                    if (errorBody.error && errorBody.error.includes("is currently loading")) {
+                         throw new Error(`Model AI sedang dimuat, coba lagi dalam ${errorBody.estimated_time || 'beberapa saat'}.`);
+                    }
                     throw new Error(`Gagal menghubungi AI: ${errorBody.error || response.statusText}`);
                 }
 
+                updateLoadingStatus("AI sedang memproses permintaan...");
                 const result = await response.json();
                 const generatedText = result[0]?.generated_text;
-                if (!generatedText) {
-                     throw new Error("Respons dari AI tidak valid atau kosong.");
-                }
+                if (!generatedText) throw new Error("Respons dari AI kosong.");
 
-                // Mencari dan mem-parsing JSON dari teks yang dihasilkan AI
                 try {
                     const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
-                    if (!jsonMatch) {
-                        throw new Error("AI tidak menghasilkan format JSON yang valid.");
-                    }
+                    if (!jsonMatch) throw new Error("AI tidak menghasilkan format JSON yang valid.");
                     const parsedJson = JSON.parse(jsonMatch[0]);
                     return parsedJson.clips;
                 } catch (e) {
                     console.error("Gagal mem-parsing JSON dari AI:", generatedText);
-                    throw new Error("Gagal memahami respons dari AI. Coba lagi.");
+                    throw new Error("Gagal memahami respons dari AI.");
                 }
             };
 
             autoClipBtn.addEventListener('click', async () => {
                 if (!currentVideoId || !player) return;
                 
-                if (typeof player.getDuration !== 'function' || player.getDuration() <= 0) {
-                     showError("Tunggu video dimuat sepenuhnya (putar sebentar jika perlu) sebelum membuat klip.");
-                     return;
+                const currentDuration = player.getDuration();
+                if (currentDuration <= 0) {
+                    showError("Tunggu video dimuat sepenuhnya (putar sebentar jika perlu).");
+                    return;
                 }
-                
+
                 hideError();
                 resetClips();
-                setStatus('loading', 'Mempersiapkan analisis...');
+                setStatus('loading', 'Memulai analisis AI...');
                 
-                const apiKey = apiKeyInput.value.trim();
-                const currentDuration = player.getDuration();
-                const currentTitle = player.getVideoData().title;
-
                 try {
-                    const suggestions = await getHuggingFaceAIClips(apiKey, currentTitle, currentDuration);
-                    if (suggestions && Array.isArray(suggestions)) {
+                    const suggestions = await getHuggingFaceAIClips(HUGGING_FACE_API_KEY, currentVideoTitle, currentDuration);
+                    if (suggestions && Array.isArray(suggestions) && suggestions.length > 0) {
                         clipsData = suggestions;
                         renderClips();
                     } else {
@@ -412,7 +351,6 @@
                 }
             });
 
-            // --- Clip Rendering & Actions ---
             const renderClips = () => {
                 clipList.innerHTML = '';
                 if (clipsData.length > 0) {
@@ -428,8 +366,8 @@
                                 <img src="${thumbnailUrl}" class="w-full h-full object-cover" alt="Video thumbnail" loading="lazy">
                             </div>
                             <div class="flex-grow pt-1">
-                                <h3 class="font-bold text-white text-sm leading-tight">${clip.title}</h3>
-                                <p class="text-xs text-slate-400 mt-2">Timestamp: ${clip.start} - ${clip.end}</p>
+                                <h3 class="font-bold text-white text-sm leading-tight">${clip.title || 'Tanpa Judul'}</h3>
+                                <p class="text-xs text-slate-400 mt-2">Timestamp: ${clip.start || '00:00'} - ${clip.end || '00:00'}</p>
                             </div>
                             <div class="flex flex-col gap-2 pt-1">
                                 <button class="download-btn p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-md transition" title="Download Klip"><i data-lucide="download" class="w-4 h-4"></i></button>
@@ -457,16 +395,16 @@
 
             const downloadClip = (index) => {
                 const clip = clipsData[index];
-                const content = `Judul: ${clip.title}\nTimestamp: ${clip.start} - ${clip.end}\nVideo: "${currentVideoTitle}" (ID: ${currentVideoId})\n\nGenerated by Clipz Beta Z2`;
-                const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+                const content = `Judul: ${clip.title}\nTimestamp: ${clip.start} - ${clip.end}\nVideo ID: ${currentVideoId}\n\nGenerated by Clipz AI`;
+                const blob = new Blob([content], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a'); a.href = url; a.download = `Clip_${clip.title.replace(/[^a-zA-Z0-9]/g, '_')}.txt`; a.click(); URL.revokeObjectURL(url);
             };
             exportBtn.addEventListener('click', () => {
                 if (clipsData.length === 0) return;
-                const allClipsContent = clipsData.map((c, i) => `Klip ${i+1}:\n- Judul: ${c.title}\n- Timestamp: ${c.start} - ${c.end}`).join('\n\n');
-                const content = `Daftar Klip untuk Video: "${currentVideoTitle}" (ID: ${currentVideoId})\n\n${allClipsContent}`;
-                const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+                const allClipsContent = clipsData.map((c, i) => `Klip ${i+1}\nJudul: ${c.title}\nTimestamp: ${c.start} - ${c.end}`).join('\n\n');
+                const content = `Daftar Klip untuk Video ID: ${currentVideoId}\n\n${allClipsContent}`;
+                const blob = new Blob([content], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a'); a.href = url; a.download = `Semua_Klip_${currentVideoId}.txt`; a.click(); URL.revokeObjectURL(url);
             });
@@ -488,7 +426,6 @@
             deleteAllBtn.addEventListener('click', () => openDeleteModal(null));
 
             // --- Initial Setup ---
-            loadApiKey();
             setStatus('empty');
             updateButtonsState();
         });
